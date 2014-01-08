@@ -8,3 +8,6 @@ A simple Plex channel for Univision Anywhere TV: http://tv.univision.mn
 3. Enter your Univision login data in the channel preferences.
 
 ## Screenshots
+![](https://raw.github.com/tugstugi/univision_plex_channel/master/screenshot1.png)
+![](https://raw.github.com/tugstugi/univision_plex_channel/master/screenshot2.png)
+![](https://raw.github.com/tugstugi/univision_plex_channel/master/screenshot3.png)
