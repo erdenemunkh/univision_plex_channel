@@ -1,4 +1,4 @@
 Univision Anywhere TV
 ================
 
-Univision Anywhere TV channel for Plex.
+Plex channel for Univision Anywhere TV.
