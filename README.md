@@ -1,4 +1,4 @@
-Univision.bundle
+Univision Anywhere TV
 ================
 
-Univision Anywhere TV for Plex
+Univision Anywhere TV channel for Plex.

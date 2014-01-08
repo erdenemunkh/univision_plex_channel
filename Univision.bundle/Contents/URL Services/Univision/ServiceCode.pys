@@ -1,0 +1,81 @@
+####################################################################################################
+def NormalizeURL(url):
+    return url
+
+####################################################################################################
+def MetadataObjectForURL(url):
+	return VideoClipObject(
+            title='title',
+            summary='summary',
+            duration=100000,
+            originally_available_at=Datetime.ParseDate('2010-10-10').date()
+        )
+
+####################################################################################################
+def MediaObjectsForURL(url):
+	return [
+        MediaObject(
+            container='mpegts',
+            video_codec=VideoCodec.H264,
+            audio_codec=AudioCodec.AAC,
+            audio_channels=2,
+            optimized_for_streaming=True,
+            parts=[
+                PartObject(
+                    key=HTTPLiveStreamURL(Callback(PlayVideo, url=url))
+                )
+            ]
+        )
+    ]
+
+####################################################################################################
+@indirect
+def PlayVideo(url):
+	return IndirectResponse(
+                VideoClipObject,
+                key=HTTPLiveStreamURL(GetClientDependentURL(url))
+            )
+
+###########################################################
+def GetClientDependentURL(url):
+    if Client.Platform in ['MacOSX', 'Windows', None]:
+        streams = GetHLSStreams(url)
+    
+        # Return highest bitrate url since PMC can't handle HLS correctly
+        # Also consider a client not identifying itself as needing help,
+        # the Samsung client is one of those. 
+        return streams[0]['url']
+    else:
+        # Other clients can handle HLS correctly
+        return url 
+
+###########################################################
+def GetHLSStreams(url):
+    streams = []
+
+    playList = HTTP.Request(url).content
+
+    # Parse the m3u8 file to get:
+    # - URL
+    # - Resolution
+    # - Bitrate
+    for line in playList.splitlines():
+        if "BANDWIDTH" in line:
+            stream = {}
+            stream["bitrate"] = int(Regex('(?<=BANDWIDTH=)[0-9]+').search(line).group(0))        
+
+            if "RESOLUTION" in line:
+                stream["resolution"] = int(Regex('(?<=RESOLUTION=)[0-9]+x[0-9]+').search(line).group(0).split("x")[1])
+            else:
+                stream["resolution"] = 0
+
+        elif ".m3u8" in line:
+            if not line.startswith("http://"):
+                path = url[ : url.rfind('/') + 1]
+                stream["url"] = path + line
+                    
+            streams.append(stream)
+                
+    sorted_streams = sorted(streams, key=lambda stream: stream["bitrate"], reverse=True)        
+
+    return sorted_streams
