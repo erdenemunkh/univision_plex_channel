@@ -41,6 +41,11 @@ def Start():
     HTTP.CacheTime = 5*CACHE_1MINUTE
     HTTP.Headers['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:19.0) Gecko/20100101 Firefox/19.0'
     
+    # use Ulaanbaatqr time
+    ub_now = (Datetime.Now() + Datetime.Delta(hours=8)).strftime("%Y-%m-%d")
+    for id in CHANNELS:
+        CHANNELS[id]['date'] = ub_now
+    
 def ValidatePrefs():
     login_failed = Login()
     if login_failed:
