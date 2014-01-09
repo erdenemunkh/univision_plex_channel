@@ -8,16 +8,5 @@
     <string>*</string>
     <key>PlexFrameworkVersion</key>
     <string>2</string>
-
-    <key>PlexURLServices</key>
-    <dict>
-        <key>Univision</key>
-        <dict>
-            <key>URLPattern</key>
-            <string>http://202\.70\.32\.50/.*</string>
-            <key>Identifier</key>
-            <string>com.plexapp.plugins.univision</string>
-        </dict>
-    </dict>
 </dict>
 </plist>
