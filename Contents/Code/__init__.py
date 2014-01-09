@@ -58,7 +58,7 @@ def MainMenu():
     
     for id in CHANNELS:
         channel = CHANNELS[id]
-        oc.add(DirectoryObject(key = Callback(ChannelMenu, id=id, date=channel['date']), title=channel['title'], summary=channel['schedule']))
+        oc.add(DirectoryObject(key = Callback(ChannelMenu, id=id, date=channel['date']), title=channel['title'], summary=channel['schedule'], thumb=R('%s.png' % channel['image'])))
     
     oc.add(PrefsObject(title=L('Preferences')))
     
