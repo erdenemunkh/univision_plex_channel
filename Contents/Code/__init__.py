@@ -4,7 +4,7 @@ PREFIX = '/video/univision'
 NAME = 'Univision'
 
 VERSION = 99
-LOGIN_URL = 'http://my.univision.mn/user/loginformobile'
+LOGIN_URL = 'https://my.univision.mn/user/loginformobile'
 GET_CHANNELS_URL = 'http://tv.univision.mn/tv/xml?id=%s'
 GET_SCHEDULE_URL = 'http://tv.univision.mn/tv/xmlByChannel?username=%s&channel=%s&date=%s'
 GET_LIVE_STREAM_URL = 'http://tv.univision.mn/tv/getStreamUrl?version=' + str(VERSION) + '&username=%s&live=%s'
