@@ -10,8 +10,8 @@ GET_SCHEDULE_URL = 'http://tv.univision.mn/tv/xmlByChannel?username=%s&channel=%
 GET_LIVE_STREAM_URL = 'http://tv.univision.mn/tv/getStreamUrl?version=' + str(VERSION) + '&username=%s&live=%s'
 GET_ARCHIVE_STREAM_URL = 'http://tv.univision.mn/tv/getStreamUrl?version=' + str(VERSION) + '&username=%s&archive=%s'
 
-LIVE_STREAM_URL = 'http://202.70.32.50/hls/_definst_/tv_mid/%s/playlist.m3u8?%s'
-ARCHIVE_STREAM_URL = 'http://202.70.32.50/vod/_definst_/mp4:tv/medium/%s/playlist.m3u8?%s'
+LIVE_STREAM_URL = 'http://202.70.45.36/hls/_definst_/tv_mid/%s/playlist.m3u8?%s'
+ARCHIVE_STREAM_URL = 'http://202.70.45.36/vod/_definst_/mp4:tv/medium/%s/playlist.m3u8?%s'
 
 SESSION_ID = ''
 
@@ -40,12 +40,12 @@ CHANNELS['39'] = {'id': '39', 'date': '2014-01-01', 'title': unicode('MNC HD'), 
 def Start():
     HTTP.CacheTime = 5*CACHE_1MINUTE
     HTTP.Headers['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:19.0) Gecko/20100101 Firefox/19.0'
-    
+
     # use Ulaanbaatqr time
     ub_now = (Datetime.Now() + Datetime.Delta(hours=8)).strftime("%Y-%m-%d")
     for id in CHANNELS:
         CHANNELS[id]['date'] = ub_now
-    
+
 def ValidatePrefs():
     login_failed = Login()
     if login_failed:
@@ -58,15 +58,15 @@ def MainMenu():
     if not LoggedIn():
         Login()
     UpdateChannels()
-    
+
     oc = ObjectContainer(title1=NAME)
-    
+
     for id in CHANNELS:
         channel = CHANNELS[id]
         oc.add(DirectoryObject(key = Callback(ChannelMenu, id=id, date=channel['date']), title=channel['title'], summary=channel['schedule'], thumb=R(channel['image'])))
-    
+
     oc.add(PrefsObject(title=L('Preferences')))
-    
+
     return oc
 
 @route(PREFIX + '/{id}/{date}')
@@ -75,18 +75,18 @@ def ChannelMenu(id, date):
         login_failed = Login()
         if login_failed:
             return login_failed
-    
+
     channel = CHANNELS[id]
-    
+
     oc = ObjectContainer(title2=('%s %s' % (channel['title'], date)))
-    
+
     day = date
     prev_day = (Datetime.ParseDate(day) - Datetime.Delta(days = 1)).strftime("%Y-%m-%d")
     next_day = (Datetime.ParseDate(day) + Datetime.Delta(days = 1)).strftime("%Y-%m-%d")
     oc.add(DirectoryObject(key=Callback(ChannelMenu, id=id, date=prev_day), title=L("Previous Day")))
     if day != channel['date']:
         oc.add(DirectoryObject(key=Callback(ChannelMenu, id=id, date=next_day), title=L("Next Day")))
-        
+
     liveurl = channel['url']
     oc.add(createVideoClipObject(url=GetLiveStream(liveurl),
                                  title=L("Live Stream"),
@@ -94,10 +94,10 @@ def ChannelMenu(id, date):
                                  thumb=None,
                                  rating_key=liveurl,
                                  originally_available_at=Datetime.Now()))
-        
+
     try:
         xml = HTTP.Request(url=(GET_SCHEDULE_URL % (Prefs['username'], id, date)), cacheTime=CACHE_1MINUTE)
-        
+
         for schedule_xml in XML.ElementFromString(xml).xpath('//item'):
             starttime = Datetime.ParseDate(schedule_xml.xpath('./starttime')[0].text.strip())
             endtime = Datetime.ParseDate(schedule_xml.xpath('./endtime')[0].text.strip())
@@ -118,7 +118,7 @@ def ChannelMenu(id, date):
     except:
         Log.Exception('ChannelMenu(id, date) exception')
         pass
-    
+
     return oc
 
 def createVideoClipObject(url, title, summary, thumb, rating_key, originally_available_at=None, duration=None, include_container=False):
@@ -142,7 +142,7 @@ def createVideoClipObject(url, title, summary, thumb, rating_key, originally_ava
                 duration=duration,
                 items=MediaObjectsForURL(url)
     )
-    
+
     if include_container:
         return ObjectContainer(objects=[video])
     return video
@@ -154,10 +154,10 @@ def LoggedIn():
 def Login():
     global SESSION_ID
     SESSION_ID = ''
-    
+
     if Prefs['username'] == "" and not Prefs['password'] == "":
         return ObjectContainer(header=L('Login'), message=L('Enter your username and password in Preferences.'))
-    
+
     try:
         post = {
                 'username' : Prefs['username'],
@@ -165,7 +165,7 @@ def Login():
         }
         headers = { }
         successful = HTTP.Request(LOGIN_URL, post, headers).content.strip()
-        
+
         if successful == '1':
             content = HTTP.Request(url=(GET_LIVE_STREAM_URL % (Prefs['username'], '')), cacheTime=0).content.strip()
             index = content.index('?')
@@ -175,15 +175,15 @@ def Login():
     except:
         Log.Exception('Login() exception')
         pass
-    
+
     return ObjectContainer(header=L('Login Failed'), message=L('Please check your username and password in Preferences.'))
 
 def UpdateChannels():
     global CHANNELS
-    
+
     try:
         xml = HTTP.Request(url=(GET_CHANNELS_URL % Prefs['username']), cacheTime=5*CACHE_1MINUTE)
-        
+
         for channel_xml in XML.ElementFromString(xml).xpath('//item'):
             id = channel_xml.xpath('./id')[0].text.strip()
             CHANNELS[id]['date'] = channel_xml.xpath('./date')[0].text.strip()
@@ -202,7 +202,7 @@ def UpdateChannels():
 def GetLiveStream(liveurl, fetch_from_server=False):
     if not fetch_from_server:
         return LIVE_STREAM_URL % (liveurl, SESSION_ID)
-    
+
     try:
         content = HTTP.Request(url=(GET_LIVE_STREAM_URL % (Prefs['username'], liveurl)), cacheTime=CACHE_1MINUTE).content.strip()
         return content
@@ -214,7 +214,7 @@ def GetLiveStream(liveurl, fetch_from_server=False):
 def GetArchiveStream(archiveurl, fetch_from_server=False):
     if not fetch_from_server:
         return ARCHIVE_STREAM_URL % (archiveurl, SESSION_ID)
-    
+
     try:
         content = HTTP.Request(url=(GET_ARCHIVE_STREAM_URL % (Prefs['username'], archiveurl)), cacheTime=CACHE_1MINUTE).content.strip()
         return content
@@ -239,26 +239,26 @@ def MediaObjectsForURL(url):
             ]
         )
     ]
-    
+
 @indirect
 def PlayVideo(url):
     return IndirectResponse(
                 VideoClipObject,
                 key=HTTPLiveStreamURL(GetClientDependentURL(url))
             )
-    
+
 def GetClientDependentURL(url):
     if Client.Platform in ['MacOSX', 'Windows', None]:
         streams = GetHLSStreams(url)
-    
+
         # Return highest bitrate url since PMC can't handle HLS correctly
         # Also consider a client not identifying itself as needing help,
-        # the Samsung client is one of those. 
+        # the Samsung client is one of those.
         return streams[0]['url']
     else:
         # Other clients can handle HLS correctly
-        return url 
-    
+        return url
+
 def GetHLSStreams(url):
     streams = []
 
@@ -271,7 +271,7 @@ def GetHLSStreams(url):
     for line in playList.splitlines():
         if "BANDWIDTH" in line:
             stream = {}
-            stream["bitrate"] = int(Regex('(?<=BANDWIDTH=)[0-9]+').search(line).group(0))        
+            stream["bitrate"] = int(Regex('(?<=BANDWIDTH=)[0-9]+').search(line).group(0))
 
             if "RESOLUTION" in line:
                 stream["resolution"] = int(Regex('(?<=RESOLUTION=)[0-9]+x[0-9]+').search(line).group(0).split("x")[1])
@@ -282,9 +282,9 @@ def GetHLSStreams(url):
             if not line.startswith("http://"):
                 path = url[ : url.rfind('/') + 1]
                 stream["url"] = path + line
-                    
+
             streams.append(stream)
-                
-    sorted_streams = sorted(streams, key=lambda stream: stream["bitrate"], reverse=True)        
+
+    sorted_streams = sorted(streams, key=lambda stream: stream["bitrate"], reverse=True)
 
     return sorted_streams
