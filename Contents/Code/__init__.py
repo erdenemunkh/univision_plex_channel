@@ -167,7 +167,7 @@ def Login():
         successful = HTTP.Request(LOGIN_URL, post, headers).content.strip()
 
         if successful == '1':
-            content = HTTP.Request(url=(GET_LIVE_STREAM_URL % (Prefs['username'], '')), cacheTime=0).content.strip()
+            content = HTTP.Request(url=(GET_LIVE_STREAM_URL % (Prefs['username'], 'mnb_2.stream')), cacheTime=0).content.strip()
             index = content.index('?')
             if index >= 0:
                 SESSION_ID = content[index+1:]
